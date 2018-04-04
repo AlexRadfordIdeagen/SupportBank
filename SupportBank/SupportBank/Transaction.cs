@@ -13,7 +13,7 @@ namespace SupportBank
         public string To { get; set; }
         public string Narrative { get; set; }
         public double Amount { get; set; }
-         
+
 
 
         public Transaction(string Date, string From, string To, string Narrative, string Amount)
@@ -23,7 +23,12 @@ namespace SupportBank
             this.To = To;
             this.Narrative = Narrative;
             this.Amount = Convert.ToDouble(Amount);
-            
+
+        }
+
+        public void Print()
+        {
+            Console.WriteLine(Date + " " + From + " " + To + " " + Narrative + " " + Amount);
         }
     }
     
