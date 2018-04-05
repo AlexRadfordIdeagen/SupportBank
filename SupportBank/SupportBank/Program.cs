@@ -7,28 +7,55 @@ using System.IO;
 using NLog.Config;
 using NLog.Targets;
 using NLog;
-
+using Newtonsoft.Json;
 namespace SupportBank
 {
     class Program
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
 
-         static List<Transaction> transactions = new List<Transaction>();
+        static List<Transaction> transactions = new List<Transaction>();
 
         static void Main(string[] args)
         {
             InitializeLogging();
 
-            CSVReader();
-
             InputCommand();
+
+
+
+
 
             Console.ReadLine();
         }
 
+        private static void JSONReader(string fileName)
+        {
+
+            using (StreamReader reader = new StreamReader(@"C:\Users\Alex.Radford\source\Training\SupportBank\" + fileName))
+            {
+                transactions = JsonConvert.DeserializeObject<List<Transaction>>(reader.ReadToEnd());
+            }
+
+        }
+
         private static void InputCommand()
         {
+            Console.WriteLine("Import your file, e.g. Blarg.json");
+            string file = Console.ReadLine();
+
+            string extension = Path.GetExtension(file);
+
+            if (extension == ".json")
+            {
+                JSONReader(file);
+            }
+            if (extension == ".csv")
+            {
+                CSVReader(file);
+            }
+
+
             Console.WriteLine("Enter your command");
             string command = Console.ReadLine();
 
@@ -47,9 +74,9 @@ namespace SupportBank
             }
         }
 
-        private static void CSVReader()
+        private static void CSVReader(string fileName)
         {
-            using (var reader = new StreamReader(@"C:\Users\Alex.Radford\source\Training\SupportBank\DodgyTransactions2015.csv"))
+            using (var reader = new StreamReader(@"C:\Users\Alex.Radford\source\Training\SupportBank\" + fileName))
             {
 
                 int i = 0;
@@ -89,7 +116,7 @@ namespace SupportBank
         {
             foreach (var transaction in transactions)
             {
-                if (transaction.To == accountName || transaction.From == accountName)
+                if (transaction.ToAccount == accountName || transaction.FromAccount == accountName)
                 {
                     transaction.Print();
                 }
@@ -110,21 +137,21 @@ namespace SupportBank
 
             foreach (var transaction in transactions)
             {
-                if (dictionary.ContainsKey(transaction.To))
+                if (dictionary.ContainsKey(transaction.ToAccount))
                 {
-                    dictionary[transaction.To] += transaction.Amount;
+                    dictionary[transaction.ToAccount] += transaction.Amount;
                 }
                 else
                 {
-                    dictionary.Add(transaction.To, transaction.Amount);
+                    dictionary.Add(transaction.ToAccount, transaction.Amount);
                 }
-                if (dictionary.ContainsKey(transaction.From))
+                if (dictionary.ContainsKey(transaction.FromAccount))
                 {
-                    dictionary[transaction.From] -= transaction.Amount;
+                    dictionary[transaction.FromAccount] -= transaction.Amount;
                 }
                 else
                 {
-                    dictionary.Add(transaction.From, -transaction.Amount);
+                    dictionary.Add(transaction.FromAccount, -transaction.Amount);
                 }
 
             }

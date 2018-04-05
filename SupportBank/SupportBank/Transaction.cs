@@ -10,8 +10,8 @@ namespace SupportBank
     class Transaction
     {
         public string Date { get; set; }
-        public string From { get; set; }
-        public string To { get; set; }
+        public string FromAccount { get; set; }
+        public string ToAccount { get; set; }
         public string Narrative { get; set; }
         public double Amount { get; set; }
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
@@ -36,8 +36,8 @@ namespace SupportBank
         public Transaction(string Date, string From, string To, string Narrative, double Amount)
         {
             this.Date = Date;
-            this.From = From;
-            this.To = To;
+            this.FromAccount = From;
+            this.ToAccount = To;
             this.Narrative = Narrative;
             this.Amount = Amount;
 
@@ -45,7 +45,7 @@ namespace SupportBank
 
         public void Print()
         {
-            Console.WriteLine(Date + " " + From + " " + To + " " + Narrative + " " + Amount);
+            Console.WriteLine(Date + " " + FromAccount + " " + ToAccount + " " + Narrative + " " + Amount);
         }
     }
 
