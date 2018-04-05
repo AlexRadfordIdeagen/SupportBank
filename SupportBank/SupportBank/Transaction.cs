@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NLog;
 
 namespace SupportBank
 {
@@ -13,16 +14,32 @@ namespace SupportBank
         public string To { get; set; }
         public string Narrative { get; set; }
         public double Amount { get; set; }
+        private static readonly ILogger log = LogManager.GetCurrentClassLogger();
+        public static Transaction TryToCreate(string Date, string From, string To, string Narrative, string Amount)
+        {
 
 
+            try
+            {
+                Convert.ToDouble(Amount);
+            }
+            catch (Exception e)
+            {
+                log.Error(e);
+                return null;
+            }
+            return new Transaction(Date, From, To, Narrative, Convert.ToDouble(Amount));
 
-        public Transaction(string Date, string From, string To, string Narrative, string Amount)
+        }
+
+
+        public Transaction(string Date, string From, string To, string Narrative, double Amount)
         {
             this.Date = Date;
             this.From = From;
             this.To = To;
             this.Narrative = Narrative;
-            this.Amount = Convert.ToDouble(Amount);
+            this.Amount = Amount;
 
         }
 
@@ -31,6 +48,6 @@ namespace SupportBank
             Console.WriteLine(Date + " " + From + " " + To + " " + Narrative + " " + Amount);
         }
     }
-    
+
 
 }
