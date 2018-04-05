@@ -8,6 +8,11 @@ using NLog.Config;
 using NLog.Targets;
 using NLog;
 using Newtonsoft.Json;
+using System.Xml;
+using System.Xml.Serialization;
+
+
+
 namespace SupportBank
 {
     class Program
@@ -20,26 +25,13 @@ namespace SupportBank
         {
             InitializeLogging();
 
-            InputCommand();
-
-
-
-
+            InputFile();
 
             Console.ReadLine();
         }
 
-        private static void JSONReader(string fileName)
-        {
 
-            using (StreamReader reader = new StreamReader(@"C:\Users\Alex.Radford\source\Training\SupportBank\" + fileName))
-            {
-                transactions = JsonConvert.DeserializeObject<List<Transaction>>(reader.ReadToEnd());
-            }
-
-        }
-
-        private static void InputCommand()
+        private static void InputFile()
         {
             Console.WriteLine("Import your file, e.g. Blarg.json");
             string file = Console.ReadLine();
@@ -50,28 +42,69 @@ namespace SupportBank
             {
                 JSONReader(file);
             }
-            if (extension == ".csv")
+           else  if (extension == ".csv")
             {
                 CSVReader(file);
             }
-
-
-            Console.WriteLine("Enter your command");
-            string command = Console.ReadLine();
-
-
-            if (command.ToLower() == "list all")
+           else  if (extension == ".xml")
             {
-                var dictionary = AggregatePerEntry(transactions);
-                PrintAggregation(dictionary);
+                XMLReader(file);
             }
-            else if (command.ToLower().Contains("list ["))
+            else
             {
-                string[] subCommand = command.Split('[');
-                string accountName = subCommand[1].Remove(subCommand[1].Length - 1);
-
-                PrintAccountDetails(accountName, transactions);
+                Console.WriteLine("I'm sorry " + file + " is not valid");
+                InputFile();
             }
+
+            InputCommand();
+        }
+
+        private static void WriteToFile(string write)
+        {
+            Console.WriteLine("Would you like to write the transaction log?  Y/N");
+
+        }
+
+        private static void XMLReader(string fileName)
+        {
+
+            XmlDocument doc = new XmlDocument();
+            doc.Load(@"C:\Users\Alex.Radford\source\Training\SupportBank\" + fileName);
+            string Narrative;
+            string Amount;
+            string To;
+            string From;
+
+            foreach (XmlNode node in doc.DocumentElement.SelectSingleNode("//TransactionList"))
+            {
+                // TODO exception handling if parse fails
+                var OADateNumber = Double.Parse(node.Attributes[0].InnerText);
+
+                foreach (XmlNode child in node.ChildNodes)
+                {
+
+                    Narrative = node.ChildNodes[0].InnerText;
+                    Amount = node.ChildNodes[1].InnerText;
+                    From = node.ChildNodes[2].ChildNodes[0].InnerText;
+                    To = node.ChildNodes[2].ChildNodes[1].InnerText;
+                    Transaction myTransaction = Transaction.TryToCreateFromXML(OADateNumber, From, To, Narrative, Amount);
+                    transactions.Add(myTransaction);
+                }
+
+
+            }
+
+
+
+        }
+        private static void JSONReader(string fileName)
+        {
+
+            using (StreamReader reader = new StreamReader(@"C:\Users\Alex.Radford\source\Training\SupportBank\" + fileName))
+            {
+                transactions = JsonConvert.DeserializeObject<List<Transaction>>(reader.ReadToEnd());
+            }
+
         }
 
         private static void CSVReader(string fileName)
@@ -87,7 +120,7 @@ namespace SupportBank
                     if (i != 0)
                     {
 
-                        Transaction myTransaction = Transaction.TryToCreate(splits[0], splits[1], splits[2], splits[3], splits[4]);
+                        Transaction myTransaction = Transaction.TryToCreateFromCSV(splits[0], splits[1], splits[2], splits[3], splits[4]);
                         if (myTransaction != null)
                         {
                             transactions.Add(myTransaction);
@@ -95,6 +128,25 @@ namespace SupportBank
                     }
                     i++;
                 }
+            }
+        }
+        private static void InputCommand()
+        {
+            Console.WriteLine("Enter your command");
+            string command = Console.ReadLine();
+
+
+            if (command.ToLower() == "list all")
+            {
+                var dictionary = AggregatePerEntry(transactions);
+                PrintAggregation(dictionary);
+            }
+            else if (command.ToLower().Contains("list ["))
+            {
+                string[] subCommand = command.Split('[');
+                string accountName = subCommand[1].Remove(subCommand[1].Length - 1);
+
+                PrintAccountDetails(accountName, transactions);
             }
         }
 
